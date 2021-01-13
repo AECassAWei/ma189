@@ -1,7 +1,12 @@
 ---
-title: "Math 189: Introduction"
-output: html_notebook
+title: 'Math 189: Introduction'
+output:
+  pdf_document: default
+  html_notebook: default
 ---
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
 
 # I. Overview
 
@@ -36,7 +41,8 @@ https://math189.edublogs.org/files/2018/01/Statistics-and-Data-Science-1vh53fi-1
 ## Unemployment Claims Surge due to Covid-19 
 
 ```{r}
-claims <- read.table("C:\\Users\\neide\\Documents\\GitHub\\ma189\\Data\\InitialClaims.dat")
+# claims <- read.table("C:\\Users\\neide\\Documents\\GitHub\\ma189\\Data\\InitialClaims.dat")
+claims <- read.table("../Data/InitialClaims.dat")
 period <- 365.25/7
 claims <- ts(claims, start = c(1967,1), frequency = period)
 plot(claims)
