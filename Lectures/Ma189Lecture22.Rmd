@@ -129,7 +129,7 @@ Dislike to Strongly Like.
 - Let’s first have a peek at the dataset and some descriptive statistics.
  
 ```{r} 
-df<- read.csv("dataset_EFA.csv")
+df<- read.csv("../Data/dataset_EFA.csv")
 head(df)
 out <- rbind(apply(df, 2, mean),apply(df, 2, var))
 colnames(out) <- c("Biology","Geology","Chemistry","Algebra","Calculus","Statistics")
@@ -217,7 +217,7 @@ n.factors <- 2
 fa_fit <- factanal(df, n.factors, rotation="varimax")
 
 # Factor loadings
-loading <- fa_fit$loadings[,1:2]
+loading <- fa_fit$loadings[,1:n.factors]
 t(loading)
 ```
 
