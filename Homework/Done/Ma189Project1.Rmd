@@ -1,0 +1,191 @@
+---
+title: "Math 189: Midterm Project 1"
+author: 'Xiangyu Wei'
+date: 'January 24, 2021'
+output: pdf_document
+---
+
+# Introduction
+The Motor Trend Car Road Tests dataset contains information from the 1974 Motor Trend US magazine, of 32 observations on 11 variables. In this study, I aim to explore the relationship between weight (wt) and miles per gallon (mpg) by examining the scatterplot of the relationship, the sample means of each variable, the sample correlation/covariance between two variables, and a linear regression model. Moreover, I also want to see if this relationship is dependent on the number of cylinders (cyl). I will use the same methods mentioned before on each level of cyl, and compare the differences between the output statistic of each level to see if the relationship between wt and mpg has a dependence on cyl.
+
+# Tasks & Analysis 
+The following are the packages that are used in the study.
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+## Dataset
+The Motor Trend Car Road Tests dataset was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models). It was also used in Henderson and Velleman (1981), Building multiple regression models interactively. Biometrics, 37, 391–411. I extracted the dataset from https://github.com/tuckermcelroy/ma189/blob/main/Data/mtcars.csv at 2021-01-14 20:18:53 PST (when my groupmate and I did homework 2).
+
+### Load Dataset
+```{r}
+mtcars <- read.csv('Data/mtcars.csv')
+head(mtcars)
+```
+
+As we can see from the printed dataframe, the 2nd (mpg), 3rd (cyl), and 7th (wt) columns are what we need for this study. 
+
+### Check Dataset
+```{r}
+table(mtcars$cyl)
+```
+
+Upon investigation, it seems that cyl only has three variables, making it more like a categorical variable instead of a continuous numeric variable. Thus, I decided to covnert it into a factor using `as.factor()`.
+
+### Data Cleaning
+```{r}
+mtcars <- mtcars %>% 
+  select(c(2,3,7)) %>% 
+  mutate(cyl.fact = as.factor(cyl))
+```
+
+I select 2nd, 3rd, and 7th columns because they are what's needed for this study. I add a column called `cyl.fact`, which converts the number of cylinder (cyl) into a factor because of my investigation above.
+
+## Method 
+To investigate the relationship between weight (wt) and miles per gallon (mpg), I will look at scatterplot of the relationship, the sample means of each variable, the sample correlation/covariance between two variables, and a linear regression model. To examine whether the wt and mpg relationship is dependent on the number of cylinders (cyl), I will use the same methods mentioned above on the relationship of wt and mpg within each level of cyl, and compare those statistics to see if there is a difference.
+
+## Analysis
+### What is the relationship between wt (Weight) and mpg (Miles per gallon)?
+#### 2-D Scatterplot 
+To first investigate the relationship between wt and mpg, I use `plot()` to plot out the scatterplot with wt as the predictor and mpg as the response variable to examine the relationship intuitively. A linear model is also built using `lm()` to plot out the regression line in red using `abline()`.
+```{r}
+# scatterplot, relationship between wt and mpg
+plot(x = mtcars$wt, y = mtcars$mpg, 
+     xlab = "Weight", ylab = "Miles per gallon", 
+     main = "Relationship between WT and MPG", pch = 20)
+
+# regression line
+wt.mpg.mdl <- lm(data = mtcars, mpg ~ wt)
+abline(wt.mpg.mdl, col = "red")
+```
+
+From the graph we can see that there seems to be a negative relationship between wt and mpg, which means as wt increases, mpg decreases. To further confirm this relationship, I calculate the sample mean, sample correlation, and sample covariance to check with the scatterplot, and to further quantify this relationship.
+
+#### Sample Mean
+Sample means are calculated using `mean()` for wt and mpg to verify the variables shown on the graph. I am using sample mean instead of other measures because mean is an **unbiased** estimator.
+```{r}
+c(mean(mtcars$wt), mean(mtcars$mpg))
+```
+
+The mean for wt is 3.217, while the mean for mpg is 20.091. Both calculated means correspond to what are shown in the scatterplot above.
+
+#### Sample Correlation
+Then, the sample correlation is calculated using `cor()` for wt and mpg. Sample correlation is used because it is a standard measure for checking association between two variables. However, sample correlation is only **asymptotic unbiased** instead of completely unbiased.
+```{r}
+cor(mtcars$wt, mtcars$mpg)
+```
+
+The sample correlation coefficient between wt and mpg is -0.868, which means that there is a **strong negative linear** relationship between wt and mpg. This conclusion corresponds with what we observed in the scatterplot above. However, since sample correlation is only *unbiased asymptotically*, I want to use another measure that is completely unbiased to measure the relationship.
+
+#### Sample Covariance
+Thus, the sample covariance is calculated using `cov()` for wt and mpg. Sample covariance is used because it is also a measure for association between two variables, and it is **unbiased**.
+```{r}
+cov(mtcars$wt, mtcars$mpg)
+```
+
+The sample covariance is -5.117, which is negative and means that there is a **negative association** between wt and mpg. This conclusion corresponds to our conclusion using sample correlation, and with our scatterplot above. But how exactly are wt and mpg negatively correlated? What is the intercept $\beta_0$ and the slope $\beta_1$ if the linear relationship is in the form $mpg = \beta_0 + \beta_1 \times wt$? 
+
+#### Linear Model
+In order to investigate the specific relationship in the form $mpg = \beta_0 + \beta_1 \times wt$, a linear model is created between wt as the predictor and mpg as the response variable. Since the linear model is already created using `lm()` when trying to plot the regression line above, there I will just use `summary()` to check the results. 
+
+```{r}
+summary(wt.mpg.mdl)
+```
+
+From the above summary, we know that the intercept $\beta_0 = 37.285$ and the slope $\beta_1 = -5.345$, which means the specific linear relationship between wt and mpg is as follows: $mpg = 37.285 - 5.345 \times wt$.
+
+### Does the relationship between wt (Weight) and mpg (Miles per gallon) depend on the number of cylinders (cyl)? 
+#### 2-D Scatterplot (by color)
+To first investigate whether the negative relationship between wt and mpg is dependent on cyl, I use `plot()` for the same scatterplot above but separate different levels of cyl to examine the relationship individually. Three different linear models are also built using `lm()` to plot out the regression lines for the three different levels of cyl using `abline()`. The legend for the meaning of each color is also created using `legend()`.
+```{r}
+# scatterplot, relationship between wt and mpg by cyl (color)
+plot(x = mtcars$wt, y = mtcars$mpg, 
+     xlab = "Weight", ylab = "Miles per gallon", 
+     main = "Relationship between WT and MPG by CYL",
+     col = mtcars$cyl.fact, pch = 20)
+
+# regression lines, by cyl
+wt.mpg.cyl4.mdl <- lm(data = mtcars %>% filter(cyl == 4), mpg ~ wt)
+wt.mpg.cyl6.mdl <- lm(data = mtcars %>% filter(cyl == 6), mpg ~ wt)
+wt.mpg.cyl8.mdl <- lm(data = mtcars %>% filter(cyl == 8), mpg ~ wt)
+abline(wt.mpg.cyl4.mdl, col = "black")
+abline(wt.mpg.cyl6.mdl, col = "red")
+abline(wt.mpg.cyl8.mdl, col = "green")
+
+# add legend
+legend(4.5, 33, legend=c("4", "6", "8"),
+       col=c("black", "red", "green"), lty = 1,
+       cex=0.8, title="Number of cylinders")
+```
+
+From the graph we can see that all three linear relationships for wt and mpg seem to be negative. However, the slope and intercept for each negative linear relationship are different. To further quantify the differences, I calculate the sample mean, sample correlation, and sample covariance for each level of cyl.
+
+#### Sample Mean
+Sample mean is **unbiased**, and is thus calcluated for wt and mpg for each level of cyl to check the differences in association.
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(wt.mean = mean(wt),
+            mpg.mean = mean(mpg),
+            .groups = 'drop')
+```
+
+When cyl is 4, the mean for wt is 2.286, while the mean for mpg is 26.664. When cyl is 6, the mean for wt is 3.117, while the mean for mpg is 19.743. When cyl is 8, the mean for wt is 3.999, while the mean for mpg is 15.100. Therefore, the mean of wt and the mean of mpg seem to be different for all levels of cyl. And as cyl increases, the mean of wt increases but the mean of mpg decreases.
+
+#### Sample Correlation
+Sample correlation is only **asymptotic unbiased** as mentioned above, and is calculated for wt and mpg for each level of cyl to check the differences in association.
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(correlation = cor(wt, mpg),
+            .groups = 'drop')
+```
+
+When cyl is 4, the sub-sample correlation is -0.713. When cyl is 6, the sub-sample correlation is -0.682. When cyl is 8, the sub-sample correlation is -0.650. Therefore, the correlations between wt and mpg are all negative, which means that wt and mpg have a **negative linear** relationship for all levels of cyl. The correlations are also all different for all levels of cyl. And as cyl increases, the correlation decreases. 
+
+#### Sample Covariance
+Sample covariance is **unbiased** as mentioned above, and is calculated for wt and mpg for each level of cyl to check the differences in association
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(correlation = cov(wt, mpg),
+            .groups = 'drop')
+```
+
+When cyl is 4, the sub-sample covariance is -1.832. When cyl is 6, the sub-sample covariance is -0.353. When cyl is 8, the sub-sample covariance is -1.264. Therefore, the covariances between wt and mpg are all negative, which means that wt and mpg have a **negative** relationship for all levels of cyl. The covariances are also all different for all levels of cyl.
+
+#### Linear Model (separate)
+In order to investigate the specific relationship in the form $mpg = \beta_0 + \beta_1 \times wt$ for each level of cyl, three linear models are created between wt as the predictor and mpg as the response variable. Since the linear model is already created using `lm()` when trying to plot the regression lines above, there I will just use `summary()` to check all the three results.
+
+```{r}
+summary(wt.mpg.cyl4.mdl)
+```
+
+```{r}
+summary(wt.mpg.cyl6.mdl)
+```
+
+```{r}
+summary(wt.mpg.cyl8.mdl)
+```
+
+When cyl is 4, the intercept $\beta_0 = 39.571$ and the slope $\beta_1 = -5.647$, which means the specific linear relationship between wt and mpg is as follows: $mpg = 39.571 - 5.647 \times wt$. In this model, wt **significantly predicts** mpg since $p = 0.0137 < \alpha = 0.05$. 
+
+When cyl is 6, the intercept $\beta_0 = 28.409$ and the slope $\beta_1 = -2.780$, which means the specific linear relationship between wt and mpg is as follows: $mpg = 28.409 - 2.780 \times wt$. In this model, wt **does not significantly predict** mpg since $p = 0.0918 > \alpha = 0.05$. 
+
+When cyl is 8, the intercept $\beta_0 = 23.868$ and the slope $\beta_1 = -2.192$, which means the specific linear relationship between wt and mpg is as follows: $mpg = 23.868 - 2.192 \times wt$. In this model, wt **significantly predicts** mpg since $p = 0.0118 < \alpha = 0.05$. 
+
+From the above summary, we know that the intercepts and slopes for the linear relationship between wt and mpg are all different for all levels of cyl And only when cyl is 4 and 8 is wt significantly predicting mpg. When cyl is 6, wt does not significantly predict mpg.
+
+# Conclusion
+In summary, from our examination using sample correlation, sample covariance, and a linear model, we can see that there is a clear strong negative linear relationship between wt and mpg. And the linear relationship is in the form $mpg = 37.285 - 5.345 \times wt$.
+
+After the investigation on the effect of cyl on the relationship between wt and mpg, we see that there's a difference in sample means of wt, sample means of mpg, sample correlations between wt and mpg, and sample covariances between wt and mpg. More specifically, for the sample means of wt and mpg, as cyl increases, the mean of wt increases but the mean of mpg decreases. For the sample correlation between wt and mpg, as cyl increases, the sample correlation decreases. And for the sample covariances between wt and mpg, the sample covariances are all different for all levels of cyl. 
+
+When we compare the linear models for each level of cyl, we see that when cyl is 4, wt significantly predicts mpg, and the relationship is in the form $mpg = 39.571 - 5.647 \times wt$. When cyl is 6, wt does not significantly predict mpg, and the relationship is in the form $mpg = 28.409 - 2.780 \times wt$. When cyl is 8, wt significantly predicts mpg, and the relationship is in the form $mpg = 23.868 - 2.192 \times wt$. Thus, the analyses above seem to suggest that even though the relationship between wt and mpg are all negative for all levels of cyl, there still seems to be an effect of cyl on this relationship since the statistic for sample means, sample correlation, sample covariance, regerssion slope/intercept, and whether wt signficantly predicts mpg (p-value) are all different from each other for all levels of cyl.
+
+# Discussion
+The study shows that there is a strong negative linear relationship between wt and mpg, and that cyl seems to have an effect on this relationship based on examination of correlation/covariance and linear regression models for each level of cyl. And if we were to think about real-life events, it follows that a heavier car needs more cylinders to power, and the higher the number of cylinders, the more fuel consumption which leads to lower miles per gallon. However, since this dataset is from several decades ago, the relationship might not apply anymore given more advanced techonology on energy consumption. Further explorations using more current datasets are needed to uncover the true relationship nowadays after 2020/2021. Other variables, such as the brand of cars or the type of cars, could also play a role in wt and mpg relationship, thus needs examination using similar or more advanced statistical tools. 
+
+Through simple comparison between statistics, such as sample correlation/covariance and linear model coefficients, I am able to tell that there seems to be a difference between each relationship of wt and mpg across levels of cyl, thus suggesting that this relationship betweenw wt and mpg depends on cyl. However, this simple comparison does not tell whether the difference is signficant. Therefore, a more wholistic model is also needed to compare the differences by including both cyl and wt into predicting mpg, which would allow us to see whether the difference in each level of cyl is signficantly different from each other. But since we are not familiar with this type of tool, we will continue learning more statitical analysis methods in MATH 189, and apply more advanced tools for future examination.
+

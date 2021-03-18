@@ -1,0 +1,94 @@
+---
+title: 'Math 189: Homework 1'
+author: 'Alan Lui, Derek So, Xiangyu Wei'
+date: '2021-01-15'
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+# Introduction
+The dataset that is used in this report is the *babies.dat* dataset, which contains the following features: 
+
+- **bwt**:		Baby’s weight at birth, to the nearest ounce
+- **gestation**:	Duration of the pregnancy in days, calculated from the first day of the last normal menstrual period.
+- **parity**:		Indicator for whether the baby is the first born (1) or not (0).
+- **age**:		Mother’s age at the time of conception, in years
+- **height**:		Height of the mother, in inches
+- **weight**:		Mother’s prepregnancy weight, in pounds
+- **smoking	Indicator**: for whether the mother smokes (1) or not (0).
+
+We will be exploring the babies dataset using the skills we learned in class. More specifically, we will display the data, calculate the transpose, inverse, trace, etc. of certain submatrix, and show whether certain matrix is positive definite or not.
+
+
+# Tasks & Analysis
+
+1. & 2. (Download *babies.dat*) Load data and give proper data citation.
+```{r}
+babies <- read.csv("Data/babies.dat", sep="")
+```
+We used *read.csv* to read in *babies.dat* as a dataframe. 
+
+The dataset is collected for each new mother in a *Child and Health Development Study*. It is found from http://www.stat.berkeley.edu/users/statlabs/labs.html, and it is presented by *Stat Labs*: Mathematical Statistics through Applications Springer-Verlag (2001) by Deborah Nolan and Terry Speed. We extracted the dataset from https://github.com/tuckermcelroy/ma189/blob/main/Data/babies.dat at 2021-01-12 20:07:02 PST.
+
+
+3. Use the *head* command to examine the first few rows of the variables **bwt**, **age**, and **weight**
+
+```{r}
+head(babies[,c(1,4,6)])
+```
+*head()* command is then used on the 1st (**bwt**), 4th (**age**), and 6th (**weight**) columns of babies dataset to check and select out the desired columns. The output columns (**bwt**, **age**, and **weight**) are all in interger format.
+
+
+4. Define and dispay a submatrix ${\bf X}$ corresponding to the last 5 records (babies), for the variables **bwt**, **age**, and **weight**
+
+```{r}
+X = as.matrix(tail(babies[,c(1,4,6)], 5))
+X
+```
+*tail()* is used to retrieve the last 5 records of the dataset for the 1st (**bwt**), 4th (**age**), and 6th (**weight**) columns with specific indexing and an additional argument signifying that we only want the last 5 records. The dataframe is converted to a matrix using *as.matrix()*, and then saved to the variable ${\bf X}$.
+
+
+5. For the above ${\bf X}$, compute ${\bf A} = {\bf X}^{\prime} \, {\bf X}$ in the notebook.
+```{r}
+A = t(X) %*% X
+A
+```
+${\bf X}^{\prime}$ is calculated by applying *t()* to the matrix ${\bf X}$, meaning the traspose of the inputted matrix. The matrix multiplication (${\bf X}^{\prime} \, {\bf X}$) is done by using the operator *%\*%*. The result is saved to variable ${\bf A}$. 
+
+As you can see from the above result, matrix ${\bf A}$ is symmetric. 
+
+
+6. Compute and display ${\bf A}^{-1}$.
+```{r}
+inv_A = solve(A)
+inv_A
+```
+${\bf A}^{-1}$, which is the inverse of the matrix ${\bf A}$, is calculated by using *solve()* on the inputted matrix. And the answer is saved to variable *inv_A*.
+
+7. Compute and display the trace of ${\bf A}$.
+```{r}
+trace = sum(diag(A))
+trace
+```
+The trace of an $n \times n$ matrix is defined as the sum of its diagonal elements. Thus by applying the function *diag()* onto the inputted matrix, we can get its diagonal elements, and then by applying the function *sum()* we can get its trace. 
+
+As you can see from the above result, the trace of ${\bf A}$ is **155098**.
+
+
+8. Prove whether ${\bf A}$ is positive definite or not.
+```{r}
+is_pos_eig = eigen(A)[[1]] > 0
+is_pos_eig
+```
+A symmetric $n \times n$ dimensional matrix ${\bf A}$ is positive definite if $\underline{v}^{\prime} {\bf A} \underline{v} > 0$ for all non-zero length $n$ vectors $\underline{v}$. In other words, ${\bf A}$ is positive definite if and only if all of its eigenvalues are positive. Since we already know that our matrix ${\bf A}$ is symmetric from Q5 above, then the next step in order to prove whether matrix ${\bf A}$ is positive definite or not is to find all of its eigenvalues and see if they are all greater than 0.
+
+By using the function *eigen()* on the inputted matrix and index the 1st element from the output list, we find all of its eigenvalues. By comparing the eigenvalues element-wise with 0, we can see if all of its values are larger than 0. We then save the results to *is_pos_eig*.
+
+As you can see from the above result, all eigenvalues are larger than 0, which means that ${\bf A}$ is a positive definite matrix. 
+
+
+# Discussion
+By exploring the *babies.dat* dataset, we are able to apply some of the skills we learned in class into practice, which includes using *head()* and *tail()* to examine the dataframe, converting dataframe into matricies using *as.matrix()*, transposing the matrix using *t()*, mutiplying two matrices using *%\*%*, calculating the inverse of the matrix using *solve()*, calculating the trace of matrix using *sum()* and *diag()*, and proving whether a matrix is positive definite by retrieving its eigenvalues using *eigen()*.
+
+We will be exploring more of R's function in data analysis in furture assignemnts and reports. 
